@@ -6,7 +6,7 @@ import argparse
 
 def synchronize_folders(source_folder, replica_folder, log_file):
     while(True):
-        #Get every file path and last modified timestamp(in order to compare timestamps between backups to see if it needs to be updated)    
+        #Get every file path and date modified(in order to compare timestamps between backups to see if it needs to be updated)    
         source_files = {}
         for root, _, files in os.walk(source_folder):
             for file in files:
@@ -30,7 +30,8 @@ def synchronize_folders(source_folder, replica_folder, log_file):
         if to_copy or to_remove:
             with open(log_file, 'a') as log:
                 log.write(f"\n{datetime.now()}\n")
-                    
+            
+            # Copy files from the source folder to the replica        
             for file, timestamp in to_copy.items():
                 source_path = os.path.join(source_folder, file)
                 replica_path = os.path.join(replica_folder, file)
@@ -39,15 +40,17 @@ def synchronize_folders(source_folder, replica_folder, log_file):
                 with open(log_file, 'a') as log:
                     log.write(f"Copied: '{file} - {timestamp}'\n")
             
-            # Remove extra files from replica
+            # Remove extra files from replica that aren't on the source folder
             for file in to_remove:
                 replica_path = os.path.join(replica_folder, file)
                 os.remove(replica_path)
                 print(f"Removed: '{file}'")
                 with open(log_file, 'a') as log:
                     log.write(f"Removed: '{file} - {timestamp}'\n")
-    
-        time.sleep(60)
+
+        #Periodic timer for syncronization
+        timer = 60
+        time.sleep(timer)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Folder Synchronization Program')
